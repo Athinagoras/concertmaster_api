@@ -21,6 +21,9 @@
   function fetchspotify ($work, $return, $market = "", $extra = "", $offset = 0, $pagelimit = 0)
   {
     global $mysql;
+    $albums = [];
+    $tracks = [];
+    $usedtracks = [];
     
     // catalogue or title mode?
 
@@ -60,6 +63,9 @@
         if ($market) $spturl .= "&market={$market}";
 
         $tspalbums = spotifydownparse ($spturl, $token);
+        if (!is_array ($tspalbums)) $tspalbums = Array ();
+        if (!is_array ($tspalbums["tracks"]["items"])) $tspalbums["tracks"]["items"] = Array ();
+        if (!isset ($tspalbums["tracks"]["next"])) $tspalbums["tracks"]["next"] = false;
         $loop = 1;
 
         //$spalbums["tracks"]["next"] = $offset + SAPI_ITEMS;
@@ -67,6 +73,8 @@
         while ($tspalbums["tracks"]["next"] && $loop <= ($pagelimit ? $pagelimit : SAPI_PAGES))
         {
           $morealbums = spotifydownparse ($tspalbums["tracks"]["next"], $token);
+          if (!is_array ($morealbums)) $morealbums = Array ();
+          if (!is_array ($morealbums["tracks"]["items"])) $morealbums["tracks"]["items"] = Array ();
           $tspalbums["tracks"]["items"] = array_merge ($tspalbums["tracks"]["items"], $morealbums["tracks"]["items"]);
           $tspalbums["tracks"]["next"] = $morealbums["tracks"]["next"];
           $loop++;
@@ -91,6 +99,9 @@
       if ($market) $spturl .= "&market={$market}";
 
       $fspalbums = spotifydownparse ($spturl, $token);
+      if (!is_array ($fspalbums)) $fspalbums = Array ();
+      if (!is_array ($fspalbums["tracks"]["items"])) $fspalbums["tracks"]["items"] = Array ();
+      if (!isset ($fspalbums["tracks"]["next"])) $fspalbums["tracks"]["next"] = false;
 
       if ($fspalbums["release_date_precision"] == "day") 
       {
@@ -131,12 +142,16 @@
       while ($spalbums["tracks"]["next"])
       {
         $morealbums = spotifydownparse ($spalbums["tracks"]["next"], $token);
-
+        if (!is_array ($morealbums)) $morealbums = Array ();
+        if (!is_array ($morealbums["items"])) $morealbums["items"] = Array ();
         $spalbums["tracks"]["items"] = array_merge ($spalbums["tracks"]["items"], $morealbums["items"]);
         $spalbums["tracks"]["next"] = $morealbums["next"];
         $loop++;
       }
     }
+
+    if (!is_array ($spalbums["tracks"]["items"])) $spalbums["tracks"]["items"] = Array ();
+    if (!isset ($spalbums["tracks"]["next"])) $spalbums["tracks"]["next"] = false;
 
     foreach ($spalbums["tracks"]["items"] as $kalb => $alb)
     {
@@ -230,7 +245,7 @@
               "spotify_albumid" => $alb["album"]["id"],
               "album_name" => $alb["album"]["name"],
               "performers" => $performers,
-              "tracks" => (in_array ($alb["id"], $usedtracks) ? sizeof ($albums[$alb["album"]["id"]]) : sizeof ($albums[$alb["album"]["id"]])+1)
+              "tracks" => (in_array ($alb["id"], $usedtracks) ? count ($albums[$alb["album"]["id"]] ?? []) : count ($albums[$alb["album"]["id"]] ?? []) + 1)
             );
 
             $usedtracks[] = $alb["id"];
@@ -254,11 +269,13 @@
       }
     }
 
+    $spotify_responses = count ($spalbums["tracks"]["items"]);
+    $useful_responses = (is_array (${$return}) ? count (${$return}) : 0);
     $stats = Array 
       (
-        "spotify_responses" => count ($spalbums["tracks"]["items"]),
-        "useful_responses" => count (${$return}),
-        "usefulness_rate" => round(100*(count (${$return})/count ($spalbums["tracks"]["items"])), 2). "%"
+        "spotify_responses" => $spotify_responses,
+        "useful_responses" => $useful_responses,
+        "usefulness_rate" => ($spotify_responses ? round(100*($useful_responses/$spotify_responses), 2). "%" : "0%")
       );
 
     if ($return == "albums" && $spalbums["tracks"]["next"])
@@ -289,12 +306,17 @@
     if ($market) $spturl .= "&market={$market}";
 
     $amres = spotifydownparse ($spturl, $token);
+    if (!is_array ($amres)) $amres = Array ();
+    if (!is_array ($amres["tracks"]["items"])) $amres["tracks"]["items"] = Array ();
+    if (!isset ($amres["tracks"]["next"])) $amres["tracks"]["next"] = false;
 
     $loop = 1;
 
     while ($amres["tracks"]["next"] && $loop <= SAPI_PAGES)
     {
       $amresmore = spotifydownparse ($amres["tracks"]["next"], $token);
+      if (!is_array ($amresmore)) $amresmore = Array ();
+      if (!is_array ($amresmore["tracks"]["items"])) $amresmore["tracks"]["items"] = Array ();
       $amres["tracks"]["items"] = array_merge ($amres["tracks"]["items"], $amresmore["tracks"]["items"]);
       $amres["tracks"]["next"] = $amresmore["tracks"]["next"];
       $loop++;

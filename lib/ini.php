@@ -20,7 +20,7 @@
   define ("MIN_COMPIL_RATIO", 0.7);
   define ("MIN_COMPIL_UNIVERSE", 10);
   define ("MIN_RELEVANCE_PERFORMER", 5);
-  define ("SAPI_ITEMS", 50);
+  define ("SAPI_ITEMS", 5);
   define ("SAPI_PAGES", 5);
   define ("API_RETURN", "json");
   define ("HASH_SALT", "vUJmLwFgniCBmqcreBbsX9Jb");
@@ -35,7 +35,7 @@
 
   // open opus 
 
-  define ("OPENOPUS", "http://api.openopus.org");
+  define ("OPENOPUS", "http://127.0.0.1");
   define ("OPENOPUS_DEFCOMP", "https://assets.openopus.org/portraits/default.jpg");
 
   // omnisearch forbidden words

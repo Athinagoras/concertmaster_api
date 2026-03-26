@@ -28,6 +28,8 @@
     $spot = fetchspotify ($work, "albums", $_REQUEST["market"], $_REQUEST["extra"], $_REQUEST["offset"], $_REQUEST["pagelimit"]);
 
     $allperfs = [];
+    $return = [];
+    $vreturn = [];
 
     foreach ($spot["items"] as $spotalb => $spalb)
     {
